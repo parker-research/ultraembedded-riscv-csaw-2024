@@ -1,0 +1,5 @@
+verilated/
+*.a
+*.o
+*.vcd
+test.x
