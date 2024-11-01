@@ -47,17 +47,6 @@ RUN make install
 WORKDIR /systemc/systemc-2.3.3
 RUN rm -rf objdir
 
-# Set important environment variables.
-ENV SYSTEMC_INCLUDE=/usr/local/systemc/include
-ENV SYSTEMC_LIBDIR=/usr/local/systemc/lib-linux64
-ENV SYSTEMC_HOME=/systemc/systemc-2.3.3
-
-ENV C_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilator/include/vltstd:/usr/local/systemc/include
-ENV CPLUS_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilator/include/vltstd:/usr/local/systemc/include
-
-# The following line must contain `verilated.cpp` file.
-ENV VERILATOR_SRC=/usr/local/share/verilator/include
-
 # ################################
 # ### Optional Fish Section ######
 # ################################
@@ -78,10 +67,25 @@ RUN fish --version
 # Change the default shell to fish
 RUN echo "fish" >> ~/.bashrc
 RUN echo "echo 'Fish exited.' && exit" >> ~/.bashrc
-
 # ################################
 # ### End Fish Section ###########
 # ################################
+
+
+# Set important environment variables.
+ENV SYSTEMC_INCLUDE=/systemc/systemc-2.3.3/include
+ENV SYSTEMC_LIBDIR=/systemc/systemc-2.3.3/lib-linux64
+ENV SYSTEMC_HOME=/systemc/systemc-2.3.3
+
+ENV C_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilator/include/vltstd:/systemc/systemc-2.3.3/include
+ENV CPLUS_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilator/include/vltstd:/systemc/systemc-2.3.3/include
+
+# The following folder must contain `libsystemc-2.3.3.so`.
+ENV LD_LIBRARY_PATH=/systemc/systemc-2.3.3/lib-linux64
+
+# The following folder must contain `verilated.cpp` file.
+ENV VERILATOR_SRC=/usr/local/share/verilator/include
+
 
 # Create a working directory
 WORKDIR /project
