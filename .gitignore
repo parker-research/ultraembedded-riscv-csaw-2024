@@ -3,3 +3,4 @@ verilated/
 *.o
 *.vcd
 test.x
+riscv-sim
