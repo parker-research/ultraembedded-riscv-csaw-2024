@@ -14,23 +14,20 @@ FROM verilator/verilator:4.038
 # Versions: https://hub.docker.com/r/verilator/verilator
 # Use version 4.038, per https://github.com/ultraembedded/riscv/issues/17
 
-# Install build dependencies
+# Prepare for non-interactive prompts, esp. for `software-properties-common`.
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies.
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     make \
     libelf-dev \
     binutils-dev \
-    # systemc-dev \
-    # verilator \
     git \
-    fish \
     sudo \
-    wget
-
-# Change the default shell to fish
-RUN echo "fish" >> ~/.bashrc
-RUN echo "echo 'Fish exited.' && exit" >> ~/.bashrc
+    wget \
+    curl
 
 # Install SystemC.
 # Guide: https://gist.github.com/bagheriali2001/0736fabf7da95fb02bbe6777d53fabf7
@@ -59,7 +56,32 @@ ENV C_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilato
 ENV CPLUS_INCLUDE_PATH=/usr/local/share/verilator/include/:/usr/local/share/verilator/include/vltstd:/usr/local/systemc/include
 
 # The following line must contain `verilated.cpp` file.
-ENV VERILATOR_SRC=/usr/local/share/verilator/share
+ENV VERILATOR_SRC=/usr/local/share/verilator/include
+
+# ################################
+# ### Optional Fish Section ######
+# ################################
+# Install fish shell.
+# RUN apt-add-repository -y ppa:fish-shell/release-3
+# RUN apt-get update
+# RUN apt-get install -y fish
+RUN apt-get install -y build-essential cmake libpcre2-dev gettext libncurses-dev
+WORKDIR /fish-build
+RUN wget https://github.com/fish-shell/fish-shell/releases/download/3.7.1/fish-3.7.1.tar.xz
+RUN tar -xvf fish-3.7.1.tar.xz
+WORKDIR /fish-build/fish-3.7.1
+RUN cmake .
+RUN make -j $(nproc)
+RUN make install
+RUN fish --version
+
+# Change the default shell to fish
+RUN echo "fish" >> ~/.bashrc
+RUN echo "echo 'Fish exited.' && exit" >> ~/.bashrc
+
+# ################################
+# ### End Fish Section ###########
+# ################################
 
 # Create a working directory
 WORKDIR /project
@@ -75,4 +97,5 @@ WORKDIR /project
 # If any environment variables or dependencies are specific to your system, refer to the documentation
 # at https://github.com/ultraembedded/riscv
 
-ENTRYPOINT ["/usr/bin/fish"]
+ENTRYPOINT ["/usr/local/bin/fish"]
+# ENTRYPOINT ["/bin/bash"]
