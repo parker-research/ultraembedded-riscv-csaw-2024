@@ -86,20 +86,20 @@ Dependencies;
 * gcc
 * make
 * libelf
-* System-C (specify path using SYSTEMC_HOME)
-* Verilator (specify path using VERILATOR_SRC)
+* System-C (specify path using `SYSTEMC_HOME`), version 3.2.x
+* Verilator (specify path using `VERILATOR_SRC`), version 4.038
 
 To build the testbench;
-```
+```bash
 cd top_tcm_axi/tb
 make
-````
+```
 
 To run the provided test executable;
-```
+```bash
 cd top_tcm_axi/tb
 make run
-````
+```
 
 ## Example Core Instance (with caches)
 
