@@ -441,6 +441,20 @@ begin
             end
         endcase
     end
+
+    // Jump to optimization start address
+    if (optimize_state == 5'd8)
+    begin
+        branch_taken_q <= 1'b1;
+        branch_target_r <= optimization_start_memory_address_i;
+    end
+    // Jump back to original PC after optimization
+    else if (optimize_state == 5'd9 && opcode_pc_i == optimization_end_memory_address)
+    begin
+        branch_taken_q <= 1'b1;
+        branch_target_r <= pc_m_q;
+        optimize_state <= 5'd0;
+    end
 end
 
 assign branch_request_o   = branch_taken_q | branch_ntaken_q;
