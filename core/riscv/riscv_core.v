@@ -82,36 +82,7 @@ module riscv_core
     output          mem_i_flush_o,
     output          mem_i_invalidate_o,
     output [ 31:0]  mem_i_pc_o
-    // Inputs
-    input           clk_i,
-    input           rst_i,
-    input  [ 31:0]  mem_d_data_rd_i,
-    input           mem_d_accept_i,
-    input           mem_d_ack_i,
-    input           mem_d_error_i,
-    input  [ 10:0]  mem_d_resp_tag_i,
-    input           mem_i_accept_i,
-    input           mem_i_valid_i,
-    input           mem_i_error_i,
-    input  [ 31:0]  mem_i_inst_i,
-    input           intr_i,
-    input  [ 31:0]  reset_vector_i,
-    input  [ 31:0]  cpu_id_i,
-
-    // Outputs
-    output [ 31:0]  mem_d_addr_o,
-    output [ 31:0]  mem_d_data_wr_o,
-    output          mem_d_rd_o,
-    output [  3:0]  mem_d_wr_o,
-    output          mem_d_cacheable_o,
-    output [ 10:0]  mem_d_req_tag_o,
-    output          mem_d_invalidate_o,
-    output          mem_d_writeback_o,
-    output          mem_d_flush_o,
-    output          mem_i_rd_o,
-    output          mem_i_flush_o,
-    output          mem_i_invalidate_o,
-    output [ 31:0]  mem_i_pc_o
+);
 );
 
     // New registers for optimization
