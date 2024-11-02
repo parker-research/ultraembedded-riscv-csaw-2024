@@ -40,6 +40,11 @@
 //-----------------------------------------------------------------
 
 module riscv_core
+(
+    // New registers for optimization
+    reg [31:0] optimization_start_memory_address;
+    reg [31:0] optimization_end_memory_address;
+    reg [3:0]  optimize_state;
 //-----------------------------------------------------------------
 // Params
 //-----------------------------------------------------------------
@@ -251,6 +256,8 @@ u_exec
     ,.branch_d_pc_o(branch_d_exec_pc_w)
     ,.branch_d_priv_o(branch_d_exec_priv_w)
     ,.writeback_value_o(writeback_exec_value_w)
+    ,.optimization_start_memory_address(optimization_start_memory_address)
+    ,.optimization_end_memory_address(optimization_end_memory_address)
 );
 
 
