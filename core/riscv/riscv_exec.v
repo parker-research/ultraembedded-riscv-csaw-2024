@@ -70,7 +70,7 @@ module riscv_exec
     ,output [ 31:0]  writeback_value_o
     ,output [31:0] optimization_start_memory_address_o
     ,output [31:0] optimization_end_memory_address_o
-    ,output [4:0]  optimize_state
+    ,output [4:0]  optimize_state_o
 );
 
 
@@ -459,6 +459,6 @@ assign branch_d_priv_o    = 2'b0; // don't care
 
 assign optimization_start_memory_address_o = optimization_start_memory_address;
 assign optimization_end_memory_address_o = optimization_end_memory_address;
-
+assign optimize_state_o = optimize_state;
 
 endmodule
