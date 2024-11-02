@@ -67,6 +67,7 @@ module riscv_core
     input           intr_i,
     input  [ 31:0]  reset_vector_i,
     input  [ 31:0]  cpu_id_i,
+    input  [ 31:0]  optimization_start_memory_address_i,
 
     // Outputs
     output [ 31:0]  mem_d_addr_o,
@@ -253,7 +254,7 @@ u_exec
     ,.optimization_start_memory_address_o(optimization_start_memory_address)
     ,.optimization_end_memory_address_o(optimization_end_memory_address)
     ,.optimize_state_o(optimize_state)
-    ,.optimization_start_memory_address_i(optimization_start_memory_address)
+    ,.optimization_start_memory_address_i(optimization_start_memory_address_i)
 );
 
 
