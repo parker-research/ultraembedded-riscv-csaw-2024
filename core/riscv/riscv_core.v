@@ -87,6 +87,7 @@ module riscv_core
 // New registers for optimization
 wire [31:0] optimization_start_memory_address;
 wire [31:0] optimization_end_memory_address;
+wire [4:0] optimize_state;
 
 wire           mmu_lsu_writeback_w;
 wire  [  1:0]  fetch_in_priv_w;
@@ -251,6 +252,7 @@ u_exec
     ,.writeback_value_o(writeback_exec_value_w)
     ,.optimization_start_memory_address_o(optimization_start_memory_address)
     ,.optimization_end_memory_address_o(optimization_end_memory_address)
+    ,.optimize_state_o(optimize_state)
 );
 
 

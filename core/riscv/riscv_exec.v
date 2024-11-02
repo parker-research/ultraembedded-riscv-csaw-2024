@@ -399,7 +399,7 @@ begin
     branch_jmp_q     <= 1'b0;
     optimization_start_memory_address <= 32'b0;
     optimization_end_memory_address <= 32'b0;
-    optimize_state <= 4'b0000;
+    optimize_state <= 5'b00000;
 end
 else if (opcode_valid_i)
 begin
@@ -415,31 +415,30 @@ begin
     if ((opcode_opcode_i & `INST_SB_MASK) == `INST_SB) // store byte
     begin
         case (optimize_state)
-            4'b0000: if (opcode_rb_operand_i == 32'h4F) optimize_state <= 4'b0001; // 'O'
-            4'b0001: if (opcode_rb_operand_i == 32'h50) optimize_state <= 4'b0010; // 'P'
-            4'b0010: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b0011; // 'T'
-            4'b0011: if (opcode_rb_operand_i == 32'h49) optimize_state <= 4'b0100; // 'I'
-            4'b0100: if (opcode_rb_operand_i == 32'h4D) optimize_state <= 4'b0101; // 'M'
-            4'b0101: if (opcode_rb_operand_i == 32'h49) optimize_state <= 4'b0110; // 'I'
-            4'b0110: if (opcode_rb_operand_i == 32'h5A) optimize_state <= 4'b0111; // 'Z'
-            4'b0111: if (opcode_rb_operand_i == 32'h45) optimize_state <= 4'b1000; // 'E'
-            4'b1000: if (opcode_rb_operand_i == 32'h5F) optimize_state <= 4'b1001; // '_'
-            4'b1001: if (opcode_rb_operand_i == 32'h53) optimize_state <= 4'b1010; // 'S'
-            4'b1010: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b1011; // 'T'
-            4'b1011: if (opcode_rb_operand_i == 32'h41) optimize_state <= 4'b1100; // 'A'
-            4'b1100: if (opcode_rb_operand_i == 32'h52) optimize_state <= 4'b1101; // 'R'
-            4'b1101: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b1110; // 'T'
-            4'b1110: if (opcode_rb_operand_i == 32'h5B) // '['
+            5'd00: optimize_state <= (opcode_rb_operand_i == 32'h4F) ? optimize_state + 5'd1 : 5'd0; // 'O'
+            5'd01: optimize_state <= (opcode_rb_operand_i == 32'h50) ? optimize_state + 5'd1 : 5'd0; // 'P'
+            5'd02: optimize_state <= (opcode_rb_operand_i == 32'h54) ? optimize_state + 5'd1 : 5'd0; // 'T'
+            5'd03: optimize_state <= (opcode_rb_operand_i == 32'h49) ? optimize_state + 5'd1 : 5'd0; // 'I'
+            5'd04: optimize_state <= (opcode_rb_operand_i == 32'h4D) ? optimize_state + 5'd1 : 5'd0; // 'M'
+            5'd05: optimize_state <= (opcode_rb_operand_i == 32'h49) ? optimize_state + 5'd1 : 5'd0; // 'I'
+            5'd06: optimize_state <= (opcode_rb_operand_i == 32'h5A) ? optimize_state + 5'd1 : 5'd0; // 'Z'
+            5'd07: if (opcode_rb_operand_i == 32'h5B) // '['=0x5B
                       begin
-                          optimization_start_memory_address <= opcode_pc_i + 1;
-                          optimize_state <= 4'b1111;
+                          optimization_start_memory_address <= opcode_ra_operand_i + 1; // One past the square bracket.
+                          optimize_state <= 5'd8; // d8 is awaiting the end of the payload.
                       end
-            4'b1111: if (opcode_rb_operand_i == 32'h5D) // ']'
+                    else optimize_state <= 5'd0;
+            5'd8: if (opcode_rb_operand_i == 32'h5D) // ']'
                       begin
-                          optimize_state <= 4'b0000;
-                          optimization_end_memory_address <= opcode_pc_i;
+                          optimization_end_memory_address <= opcode_ra_operand_i; // The end of the payload. Don't exec this one.
+                          optimize_state <= 5'd9; // d9 is just past the end of the payload.
                       end
-            default: optimize_state <= 4'b0000;
+                    // else, stay in state d8
+            default: begin
+                optimize_state <= 5'd0;
+                optimization_start_memory_address <= 32'b0;
+                optimization_end_memory_address <= 32'b0;
+            end
         endcase
     end
 end
