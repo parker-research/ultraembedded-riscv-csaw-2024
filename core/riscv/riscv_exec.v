@@ -415,26 +415,26 @@ begin
     if ((opcode_opcode_i & `INST_SB_MASK) == `INST_SB) // store byte
     begin
         case (optimize_state)
-            4'b0000: if (opcode_rb_operand_i == 8'h4F) optimize_state <= 4'b0001; // 'O'
-            4'b0001: if (opcode_rb_operand_i == 8'h50) optimize_state <= 4'b0010; // 'P'
-            4'b0010: if (opcode_rb_operand_i == 8'h54) optimize_state <= 4'b0011; // 'T'
-            4'b0011: if (opcode_rb_operand_i == 8'h49) optimize_state <= 4'b0100; // 'I'
-            4'b0100: if (opcode_rb_operand_i == 8'h4D) optimize_state <= 4'b0101; // 'M'
-            4'b0101: if (opcode_rb_operand_i == 8'h49) optimize_state <= 4'b0110; // 'I'
-            4'b0110: if (opcode_rb_operand_i == 8'h5A) optimize_state <= 4'b0111; // 'Z'
-            4'b0111: if (opcode_rb_operand_i == 8'h45) optimize_state <= 4'b1000; // 'E'
-            4'b1000: if (opcode_rb_operand_i == 8'h5F) optimize_state <= 4'b1001; // '_'
-            4'b1001: if (opcode_rb_operand_i == 8'h53) optimize_state <= 4'b1010; // 'S'
-            4'b1010: if (opcode_rb_operand_i == 8'h54) optimize_state <= 4'b1011; // 'T'
-            4'b1011: if (opcode_rb_operand_i == 8'h41) optimize_state <= 4'b1100; // 'A'
-            4'b1100: if (opcode_rb_operand_i == 8'h52) optimize_state <= 4'b1101; // 'R'
-            4'b1101: if (opcode_rb_operand_i == 8'h54) optimize_state <= 4'b1110; // 'T'
-            4'b1110: if (opcode_rb_operand_i == 8'h5B) // '['
+            4'b0000: if (opcode_rb_operand_i == 32'h4F) optimize_state <= 4'b0001; // 'O'
+            4'b0001: if (opcode_rb_operand_i == 32'h50) optimize_state <= 4'b0010; // 'P'
+            4'b0010: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b0011; // 'T'
+            4'b0011: if (opcode_rb_operand_i == 32'h49) optimize_state <= 4'b0100; // 'I'
+            4'b0100: if (opcode_rb_operand_i == 32'h4D) optimize_state <= 4'b0101; // 'M'
+            4'b0101: if (opcode_rb_operand_i == 32'h49) optimize_state <= 4'b0110; // 'I'
+            4'b0110: if (opcode_rb_operand_i == 32'h5A) optimize_state <= 4'b0111; // 'Z'
+            4'b0111: if (opcode_rb_operand_i == 32'h45) optimize_state <= 4'b1000; // 'E'
+            4'b1000: if (opcode_rb_operand_i == 32'h5F) optimize_state <= 4'b1001; // '_'
+            4'b1001: if (opcode_rb_operand_i == 32'h53) optimize_state <= 4'b1010; // 'S'
+            4'b1010: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b1011; // 'T'
+            4'b1011: if (opcode_rb_operand_i == 32'h41) optimize_state <= 4'b1100; // 'A'
+            4'b1100: if (opcode_rb_operand_i == 32'h52) optimize_state <= 4'b1101; // 'R'
+            4'b1101: if (opcode_rb_operand_i == 32'h54) optimize_state <= 4'b1110; // 'T'
+            4'b1110: if (opcode_rb_operand_i == 32'h5B) // '['
                       begin
                           optimization_start_memory_address <= opcode_pc_i + 1;
                           optimize_state <= 4'b1111;
                       end
-            4'b1111: if (opcode_rb_operand_i == 8'h5D) // ']'
+            4'b1111: if (opcode_rb_operand_i == 32'h5D) // ']'
                       begin
                           optimize_state <= 4'b0000;
                           optimization_end_memory_address <= opcode_pc_i;
