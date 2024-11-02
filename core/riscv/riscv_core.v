@@ -289,6 +289,7 @@ u_decode
     ,.fetch_out_instr_csr_o(fetch_instr_csr_w)
     ,.fetch_out_instr_rd_valid_o(fetch_instr_rd_valid_w)
     ,.fetch_out_instr_invalid_o(fetch_instr_invalid_w)
+    ,.optimization_start_memory_address_i(optimization_start_memory_address)
 );
 
 
