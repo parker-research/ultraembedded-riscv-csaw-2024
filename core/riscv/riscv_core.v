@@ -253,6 +253,7 @@ u_exec
     ,.optimization_start_memory_address_o(optimization_start_memory_address)
     ,.optimization_end_memory_address_o(optimization_end_memory_address)
     ,.optimize_state_o(optimize_state)
+    ,.optimization_start_memory_address_i(optimization_start_memory_address)
 );
 
 

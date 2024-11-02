@@ -71,6 +71,7 @@ module riscv_exec
     ,output [31:0] optimization_start_memory_address_o
     ,output [31:0] optimization_end_memory_address_o
     ,output [4:0]  optimize_state_o
+    ,input  [31:0] optimization_start_memory_address_i
 );
 
 
