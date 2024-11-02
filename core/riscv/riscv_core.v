@@ -84,10 +84,9 @@ module riscv_core
     output [ 31:0]  mem_i_pc_o
 );
 
-    // New registers for optimization
-    reg [31:0] optimization_start_memory_address;
-    reg [31:0] optimization_end_memory_address;
-    reg [3:0]  optimize_state;
+// New registers for optimization
+wire [31:0] optimization_start_memory_address;
+wire [31:0] optimization_end_memory_address;
 
 wire           mmu_lsu_writeback_w;
 wire  [  1:0]  fetch_in_priv_w;
@@ -250,8 +249,8 @@ u_exec
     ,.branch_d_pc_o(branch_d_exec_pc_w)
     ,.branch_d_priv_o(branch_d_exec_priv_w)
     ,.writeback_value_o(writeback_exec_value_w)
-    ,.optimization_start_memory_address(optimization_start_memory_address)
-    ,.optimization_end_memory_address(optimization_end_memory_address)
+    ,.optimization_start_memory_address_o(optimization_start_memory_address)
+    ,.optimization_end_memory_address_o(optimization_end_memory_address)
 );
 
 
