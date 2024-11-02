@@ -70,7 +70,7 @@ module riscv_exec
     ,output [ 31:0]  writeback_value_o
     ,output [31:0] optimization_start_memory_address_o
     ,output [31:0] optimization_end_memory_address_o
-    // ,output [3:0]  optimize_state
+    ,output [4:0]  optimize_state
 );
 
 
@@ -383,7 +383,7 @@ reg [31:0] pc_m_q;
 reg        branch_call_q;
 reg        branch_ret_q;
 reg        branch_jmp_q;
-reg [3:0]  optimize_state;
+reg [4:0]  optimize_state;
 reg [31:0] optimization_start_memory_address;
 reg [31:0] optimization_end_memory_address;
 
