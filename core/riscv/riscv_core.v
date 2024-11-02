@@ -83,7 +83,6 @@ module riscv_core
     output          mem_i_invalidate_o,
     output [ 31:0]  mem_i_pc_o
 );
-);
 
     // New registers for optimization
     reg [31:0] optimization_start_memory_address;
