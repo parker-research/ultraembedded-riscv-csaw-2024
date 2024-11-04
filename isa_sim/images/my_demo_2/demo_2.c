@@ -159,12 +159,16 @@ uint32_t demo_function(uint8_t x) {
     return 42 * x;
 }
 
+// FIXME: Known bug - global variables are not supported with this current memory/linker model.
+// uint8_t global_variable_demo = 63;
+
 int main(void) {
     sim_puts("Hello, World!\n");
 
     uint8_t x = 12;
     x += 3;
     x *= 6;
+    // x += global_variable_demo;
     sim_puts("After math, x = ");
     sim_put_hex(x);
     sim_puts("\n");

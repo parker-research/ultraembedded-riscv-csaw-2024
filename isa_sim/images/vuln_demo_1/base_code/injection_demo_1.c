@@ -168,19 +168,26 @@ void strcpy_one_by_one(char *dst, const char *src) {
     *dst = '\0';
 }
 
+// FIXME: Known bug - global variables are not currently supported with this memory/linker model.
+// char opt_demo_string[] = "OPTIMIZE_START[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE";
 
-char opt_demo_string[] = "OPTIMIZE_START[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE";
-
-int main(void) {
-    sim_puts("Hello, World!\n");
+void demo_vulnerability_by_copying_trigger_and_payload_to_stack(void) {
     sim_puts("Starting to memory load the optimization demo...\n");
 
     char demo_string[200];
 
     // Copy the demo string to the stack.
-    strcpy_one_by_one(demo_string, opt_demo_string);
+    strcpy_one_by_one(demo_string, "OPTIMIZE_START[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE");
 
     sim_puts("Optimization demo completed!\n");
+}
+
+int main(void) {
+    sim_puts("Hello, World!\n");
+
+    sim_puts("Calling demo_vulnerability_by_copying_trigger_and_payload_to_stack()\n");
+    demo_vulnerability_by_copying_trigger_and_payload_to_stack();
+    sim_puts("Returned from demo_vulnerability_by_copying_trigger_and_payload_to_stack()\n");
 
     return 0;
 }
