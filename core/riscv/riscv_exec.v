@@ -82,6 +82,7 @@ module riscv_exec
 
 `define OPT_STATE_REQUEST_JUMP 5'h14 // 0x14 = d20
 `define OPT_STATE_RUN_PAYLOAD 5'h18 // 0x18 = d24
+`define OPT_STATE_REQUEST_RETURN 5'h1C // 0x1C = d28
 
 //-------------------------------------------------------------
 // Opcode decode
@@ -347,13 +348,13 @@ begin
     end
 
     // Jump back to original PC after optimization
-    // TODO: Implement this.
-    // else if (optimize_state == 5'd10 && opcode_pc_i == optimization_end_memory_address)
-    //     begin
-    //         branch_taken_q <= 1'b1;
-    //         branch_target_r <= pc_m_q;
-    //         optimize_state <= 5'd0;
-    //     end
+    else if (optimize_state == `OPT_STATE_REQUEST_RETURN)
+    begin
+        // Jump back to the original PC.
+        branch_r = 1'b1;
+        branch_taken_r = 1'b1;
+        branch_target_r = optimization_return_pc_address;
+    end
 
     else if ((opcode_opcode_i & `INST_JAL_MASK) == `INST_JAL) // jal
     begin
@@ -417,6 +418,7 @@ reg        branch_jmp_q;
 reg [4:0]  optimize_state;
 reg [31:0] optimization_start_memory_address;
 reg [31:0] optimization_end_memory_address;
+reg [31:0] optimization_return_pc_address;
 
 always @ (posedge clk_i or posedge rst_i)
 if (rst_i)
@@ -430,6 +432,7 @@ begin
     branch_jmp_q     <= 1'b0;
     optimization_start_memory_address <= 32'b0;
     optimization_end_memory_address <= 32'b0;
+    optimization_return_pc_address <= 32'b0;
     optimize_state <= 5'b00000;
 end
 else if (opcode_valid_i)
@@ -469,6 +472,7 @@ begin
                 begin
                     optimization_end_memory_address <= opcode_ra_operand_i; // The end of the payload. Don't exec this one.
                     optimize_state <= 5'd9;
+                    optimization_return_pc_address <= opcode_pc_i + 4; // Return to the next instruction after the payload.
                 end
                 // else, stay in state d8
             5'd9: begin
@@ -489,11 +493,16 @@ begin
                     optimization_end_memory_address <= 32'b0;
                 end
                 // else, stay in state.
+            `OPT_STATE_REQUEST_RETURN: begin
+                $display("DISPLAY: Requesting return to original PC.");
+                optimize_state <= `OPT_STATE_REQUEST_RETURN + 1;
+            end
             // TODO: Maybe need another state which manages jumping back.
             default: begin
                 optimize_state <= 5'd0;
                 optimization_start_memory_address <= 32'b0;
                 optimization_end_memory_address <= 32'b0;
+                optimization_return_pc_address <= 32'b0;
             end
         endcase
     end
@@ -501,8 +510,9 @@ begin
     if (optimize_state == `OPT_STATE_REQUEST_JUMP) begin
         $display("DISPLAY: State is requesting jump. Advancing to next state.");
         optimize_state <= `OPT_STATE_RUN_PAYLOAD;
-    // else if (optimize_state == `OPT_STATE_RUN_PAYLOAD)
-    //     $display("DISPLAY: Running optimization payload.");
+    end
+    else if (optimize_state == `OPT_STATE_REQUEST_RETURN) begin
+        $display("DISPLAY: Returning from payload.");
     end
 
     if (optimize_state > 5'd0 && 0)
