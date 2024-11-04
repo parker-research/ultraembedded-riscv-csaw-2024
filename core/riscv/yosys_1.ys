@@ -1,0 +1,15 @@
+read_verilog ./*.v       # Read the Verilog file
+hierarchy -check -top riscv_core  # Set the top module (replace `riscv_core` if your top module has a different name)
+proc;                             # Process the design (expand processes)
+# flatten;         # Flatten the hierarchy
+opt_clean;       # Clean up the design, removing unused signals
+opt_expr;        # Optimize expressions
+opt -full;       # Run full optimization
+write_json riscv_core.json;
+write_dot riscv_core.dot;
+
+# Run this file with: yosys -s yosys_1.sys
+#
+# Then, generate diagram with:
+# npm install -g netlistsvg
+# netlistsvg riscv_core.json -o riscv_core.svg
