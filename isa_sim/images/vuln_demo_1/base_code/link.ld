@@ -12,9 +12,9 @@ ENTRY(_enter)
 
 MEMORY
 {
-    itim (airwx) : ORIGIN = 0x8000000, LENGTH = 0x2000
-    ram (arw!xi) : ORIGIN = 0x80000000, LENGTH = 0x4000
-    rom (irx!wa) : ORIGIN = 0x20010000, LENGTH = 0x6a120
+    itim (airwx) : ORIGIN = 0x8000, LENGTH = 0x1000 /* 0x1000 = 4096 */
+    ram (arw!xi) : ORIGIN = 0x8200, LENGTH = 0x1000
+    rom (irx!wa) : ORIGIN = 0x2000, LENGTH = 0x1000
 }
 
 PHDRS

