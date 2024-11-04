@@ -155,8 +155,32 @@ void _Exit(int exit_code) {
     }
 }
 
+uint32_t demo_function(uint8_t x) {
+    return 42 * x;
+}
 
 int main(void) {
     sim_puts("Hello, World!\n");
+
+    uint8_t x = 12;
+    x += 3;
+    x *= 6;
+    sim_puts("After math, x = ");
+    sim_put_hex(x);
+    sim_puts("\n");
+
+    sim_puts("Calling demo_function()\n");
+
+    uint32_t demo_function_result = demo_function(x);
+    sim_puts("Return value from demo_function: ");
+    sim_put_hex(demo_function_result);
+    sim_puts("\n");
+
+    for (uint8_t i = 0; i < 10; i++) {
+        sim_puts("Loop demo #");
+        sim_put_hex(i);
+        sim_puts("\n");
+    }
+
     return 0;
 }
