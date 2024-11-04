@@ -71,7 +71,6 @@ module riscv_exec
     ,output [31:0] optimization_start_memory_address_o
     ,output [31:0] optimization_end_memory_address_o
     ,output [4:0]  optimize_state_o
-    ,input  [31:0] optimization_start_memory_address_i
 );
 
 
@@ -327,7 +326,32 @@ begin
     // Default branch_r target is relative to current PC
     branch_target_r = opcode_pc_i + bimm_r;
 
-    if ((opcode_opcode_i & `INST_JAL_MASK) == `INST_JAL) // jal
+    if (optimize_state == 5'd9)
+    begin
+        // Emulate a JALR instruction (jump to target absolute address).
+        // JAL is similar, but only has an offset (relative difference) from the current PC.
+        // Effectively emulate: jalr x0, x6, 0  # Jump to the address in x6(+0) (x0 as destination to discard return value).
+        // Jump to the optimization_start_memory_address.
+        branch_r = 1'b1;
+        branch_taken_r = 1'b1;
+        branch_target_r = optimization_start_memory_address;
+        
+        // Call this "call" a jump:
+        branch_call_r = 1'b0;
+        branch_ret_r = 1'b0;
+        branch_jmp_r = 1'b1;
+    end
+
+    // Jump back to original PC after optimization
+    // TODO: Implement this.
+    // else if (optimize_state == 5'd9 && opcode_pc_i == optimization_end_memory_address)
+    //     begin
+    //         branch_taken_q <= 1'b1;
+    //         branch_target_r <= pc_m_q;
+    //         optimize_state <= 5'd0;
+    //     end
+
+    else if ((opcode_opcode_i & `INST_JAL_MASK) == `INST_JAL) // jal
     begin
         branch_r        = 1'b1;
         branch_taken_r  = 1'b1;
@@ -412,7 +436,8 @@ begin
     branch_jmp_q     <= branch_r && opcode_valid_i && branch_jmp_r;
     pc_m_q           <= opcode_pc_i;
 
-    // Optimization detection logic
+    // Optimization detection logic.
+    // TODO: Confirm that this store opcode even reaches this exec unit; otherwise, the detection may have to go into the LSU unit, and then pass the optimization state outputs back to here.
     if ((opcode_opcode_i & `INST_SB_MASK) == `INST_SB) // store byte
     begin
         case (optimize_state)
@@ -435,26 +460,13 @@ begin
                           optimize_state <= 5'd9; // d9 is just past the end of the payload.
                       end
                     // else, stay in state d8
+            // 5'd9: // FIXME: DO UNTIL THE END OF THE PAYLOAD. Check here will be to see if the current PC is back at optimization_end_memory_address.
             default: begin
                 optimize_state <= 5'd0;
                 optimization_start_memory_address <= 32'b0;
                 optimization_end_memory_address <= 32'b0;
             end
         endcase
-    end
-
-    // Jump to optimization start address
-    if (optimize_state == 5'd8)
-    begin
-        branch_taken_q <= 1'b1;
-        branch_target_r <= optimization_start_memory_address_i;
-    end
-    // Jump back to original PC after optimization
-    else if (optimize_state == 5'd9 && opcode_pc_i == optimization_end_memory_address)
-    begin
-        branch_taken_q <= 1'b1;
-        branch_target_r <= pc_m_q;
-        optimize_state <= 5'd0;
     end
 end
 

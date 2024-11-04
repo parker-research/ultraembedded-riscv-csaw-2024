@@ -67,7 +67,6 @@ module riscv_core
     input           intr_i,
     input  [ 31:0]  reset_vector_i,
     input  [ 31:0]  cpu_id_i,
-    input  [ 31:0]  optimization_start_memory_address_i,
 
     // Outputs
     output [ 31:0]  mem_d_addr_o,
@@ -254,7 +253,6 @@ u_exec
     ,.optimization_start_memory_address_o(optimization_start_memory_address)
     ,.optimization_end_memory_address_o(optimization_end_memory_address)
     ,.optimize_state_o(optimize_state)
-    ,.optimization_start_memory_address_i(optimization_start_memory_address_i)
 );
 
 
@@ -275,6 +273,9 @@ u_decode
     ,.fetch_in_fault_page_i(fetch_dec_fault_page_w)
     ,.fetch_out_accept_i(fetch_accept_w)
     ,.squash_decode_i(squash_decode_w)
+    ,.optimization_start_memory_address_i(optimization_start_memory_address)
+    ,.optimization_end_memory_address_i(optimization_end_memory_address)
+    ,.optimize_state_i(optimize_state)
 
     // Outputs
     ,.fetch_in_accept_o(fetch_dec_accept_w)
@@ -291,7 +292,6 @@ u_decode
     ,.fetch_out_instr_csr_o(fetch_instr_csr_w)
     ,.fetch_out_instr_rd_valid_o(fetch_instr_rd_valid_w)
     ,.fetch_out_instr_invalid_o(fetch_instr_invalid_w)
-    ,.optimization_start_memory_address_i(optimization_start_memory_address)
 );
 
 
