@@ -27,7 +27,9 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     wget \
-    curl
+    curl \
+    screen \
+    locales
 
 # Install SystemC.
 # Guide: https://gist.github.com/bagheriali2001/0736fabf7da95fb02bbe6777d53fabf7
@@ -86,6 +88,12 @@ ENV LD_LIBRARY_PATH=/systemc/systemc-2.3.3/lib-linux64
 # The following folder must contain `verilated.cpp` file.
 ENV VERILATOR_SRC=/usr/local/share/verilator/include
 
+# Set locale variables to avoid warnings.
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+RUN locale-gen $LANG
+RUN locale-gen $LC_ALL
 
 # Create a working directory
 WORKDIR /project
