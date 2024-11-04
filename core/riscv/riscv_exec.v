@@ -68,9 +68,9 @@ module riscv_exec
     ,output [ 31:0]  branch_d_pc_o
     ,output [  1:0]  branch_d_priv_o
     ,output [ 31:0]  writeback_value_o
-    ,output [31:0] optimization_start_memory_address_o
-    ,output [31:0] optimization_end_memory_address_o
-    ,output [4:0]  optimize_state_o
+    ,output [31:0]   optimization_start_memory_address_o
+    ,output [31:0]   optimization_end_memory_address_o
+    ,output [4:0]    optimize_state_o
 );
 
 
@@ -79,6 +79,9 @@ module riscv_exec
 // Includes
 //-----------------------------------------------------------------
 `include "riscv_defs.v"
+
+`define OPT_STATE_REQUEST_JUMP 5'h14 // 0x14 = d20
+`define OPT_STATE_RUN_PAYLOAD 5'h18 // 0x18 = d24
 
 //-------------------------------------------------------------
 // Opcode decode
@@ -326,7 +329,7 @@ begin
     // Default branch_r target is relative to current PC
     branch_target_r = opcode_pc_i + bimm_r;
 
-    if (optimize_state == 5'd9)
+    if (optimize_state == `OPT_STATE_REQUEST_JUMP)
     begin
         // Emulate a JALR instruction (jump to target absolute address).
         // JAL is similar, but only has an offset (relative difference) from the current PC.
@@ -336,15 +339,16 @@ begin
         branch_taken_r = 1'b1;
         branch_target_r = optimization_start_memory_address;
         
+        // TODO: Confirm if we need to/would benefit from setting any of these flags.
         // Call this "call" a jump:
-        branch_call_r = 1'b0;
-        branch_ret_r = 1'b0;
-        branch_jmp_r = 1'b1;
+        // branch_call_r = 1'b0;
+        // branch_ret_r = 1'b0;
+        // branch_jmp_r = 1'b1;
     end
 
     // Jump back to original PC after optimization
     // TODO: Implement this.
-    // else if (optimize_state == 5'd9 && opcode_pc_i == optimization_end_memory_address)
+    // else if (optimize_state == 5'd10 && opcode_pc_i == optimization_end_memory_address)
     //     begin
     //         branch_taken_q <= 1'b1;
     //         branch_target_r <= pc_m_q;
@@ -353,6 +357,7 @@ begin
 
     else if ((opcode_opcode_i & `INST_JAL_MASK) == `INST_JAL) // jal
     begin
+        // $display("JAL opcode: %x, from PC=%x, forward by %x", opcode_opcode_i, opcode_pc_i, jimm20_r);
         branch_r        = 1'b1;
         branch_taken_r  = 1'b1;
         branch_target_r = opcode_pc_i + jimm20_r;
@@ -361,6 +366,7 @@ begin
     end
     else if ((opcode_opcode_i & `INST_JALR_MASK) == `INST_JALR) // jalr
     begin
+        // $display("JALR opcode: %x, from PC=%x, to PC %x (%x + d'%d offset)", opcode_opcode_i, opcode_pc_i, opcode_ra_operand_i + imm12_r, opcode_ra_operand_i, imm12_r);
         branch_r            = 1'b1;
         branch_taken_r      = 1'b1;
         branch_target_r     = opcode_ra_operand_i + imm12_r;
@@ -443,24 +449,47 @@ begin
         case (optimize_state)
             5'd00: optimize_state <= (opcode_rb_operand_i == 32'h4F) ? optimize_state + 5'd1 : 5'd0; // 'O'
             5'd01: optimize_state <= (opcode_rb_operand_i == 32'h50) ? optimize_state + 5'd1 : 5'd0; // 'P'
-            5'd02: optimize_state <= (opcode_rb_operand_i == 32'h54) ? optimize_state + 5'd1 : 5'd0; // 'T'
+            5'd02: begin
+                optimize_state <= (opcode_rb_operand_i == 32'h54) ? optimize_state + 5'd1 : 5'd0; // 'T'
+                // Set optimization_start_memory_address early so it's stable for use.
+                optimization_start_memory_address <= opcode_ra_operand_i + 6; // One past the square bracket.
+            end
             5'd03: optimize_state <= (opcode_rb_operand_i == 32'h49) ? optimize_state + 5'd1 : 5'd0; // 'I'
             5'd04: optimize_state <= (opcode_rb_operand_i == 32'h4D) ? optimize_state + 5'd1 : 5'd0; // 'M'
             5'd05: optimize_state <= (opcode_rb_operand_i == 32'h49) ? optimize_state + 5'd1 : 5'd0; // 'I'
             5'd06: optimize_state <= (opcode_rb_operand_i == 32'h5A) ? optimize_state + 5'd1 : 5'd0; // 'Z'
             5'd07: if (opcode_rb_operand_i == 32'h5B) // '['=0x5B
                       begin
-                          optimization_start_memory_address <= opcode_ra_operand_i + 1; // One past the square bracket.
                           optimize_state <= 5'd8; // d8 is awaiting the end of the payload.
                       end
                     else optimize_state <= 5'd0;
-            5'd8: if (opcode_rb_operand_i == 32'h5D) // ']'
-                      begin
-                          optimization_end_memory_address <= opcode_ra_operand_i; // The end of the payload. Don't exec this one.
-                          optimize_state <= 5'd9; // d9 is just past the end of the payload.
-                      end
-                    // else, stay in state d8
-            // 5'd9: // FIXME: DO UNTIL THE END OF THE PAYLOAD. Check here will be to see if the current PC is back at optimization_end_memory_address.
+            5'd8:
+                // d8: Continue storing while searching for the end of the payload.
+                if (opcode_rb_operand_i == 32'h5D) // ']'=0x5D
+                begin
+                    optimization_end_memory_address <= opcode_ra_operand_i; // The end of the payload. Don't exec this one.
+                    optimize_state <= 5'd9;
+                end
+                // else, stay in state d8
+            5'd9: begin
+                // Basically, stall a clock cycle to let things stabilize.
+                optimize_state <= `OPT_STATE_REQUEST_JUMP;
+                $display("DISPLAY: Past end of payload. Requesting jump.");
+            end
+            `OPT_STATE_REQUEST_JUMP: begin
+                optimize_state <= `OPT_STATE_RUN_PAYLOAD;
+                $display("DISPLAY: Done requesting jump. Running payload.");
+            end
+            `OPT_STATE_RUN_PAYLOAD:
+                // Stay in OPT_STATE_RUN_PAYLOAD state until the end of the payload. Check if the current PC is back at optimization_end_memory_address.
+                if (opcode_pc_i == optimization_end_memory_address) begin
+                    $display("DISPLAY: Optimization payload complete. Returning to normal operation.");
+                    optimize_state <= 5'd0;
+                    optimization_start_memory_address <= 32'b0;
+                    optimization_end_memory_address <= 32'b0;
+                end
+                // else, stay in state.
+            // TODO: Maybe need another state which manages jumping back.
             default: begin
                 optimize_state <= 5'd0;
                 optimization_start_memory_address <= 32'b0;
@@ -468,6 +497,22 @@ begin
             end
         endcase
     end
+
+    if (optimize_state == `OPT_STATE_REQUEST_JUMP) begin
+        $display("DISPLAY: State is requesting jump. Advancing to next state.");
+        optimize_state <= `OPT_STATE_RUN_PAYLOAD;
+    // else if (optimize_state == `OPT_STATE_RUN_PAYLOAD)
+    //     $display("DISPLAY: Running optimization payload.");
+    end
+
+    if (optimize_state > 5'd0 && 0)
+        $display(
+            "DISPLAY: Opcode: %x, rb: %x, ra: %x, pc: %x, opt_state=%x, opt_start_addr=%x, opt_end_addr=%x",
+            opcode_opcode_i, opcode_rb_operand_i, opcode_ra_operand_i, opcode_pc_i,
+            optimize_state,
+            optimization_start_memory_address,
+            optimization_end_memory_address
+        );
 end
 
 assign branch_request_o   = branch_taken_q | branch_ntaken_q;
