@@ -61,9 +61,6 @@ module riscv_decode
     ,input           fetch_in_fault_page_i
     ,input           fetch_out_accept_i
     ,input           squash_decode_i
-    ,input  [ 31:0]  optimization_start_memory_address_i
-    ,input  [ 31:0]  optimization_end_memory_address_i
-    ,input  [ 4:0]   optimize_state_i
 
     // Outputs
     ,output          fetch_in_accept_o
