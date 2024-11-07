@@ -101,6 +101,27 @@ cd top_tcm_axi/tb
 make run
 ```
 
+### Testbench Using Docker
+
+To run the testbench using the provided Dockerfile, run:
+
+```bash
+# 1. Build the Docker container:
+docker build -t riscv_build .
+
+# 2. Start Docker container:
+docker run -it --rm --user (id -u):(id -g) -v (pwd):/project riscv_build
+# Press enter again.
+
+# 3. Inside the Docker container's shell, run:
+cd cd top_tcm_axi/tb
+make run
+
+# 4. Run an arbitary .elf file.
+./build/test.x -f ../../isa_sim/images/basic.elf
+./build/test.x -f ../../isa_sim/images/linux.elf -b 0x80000000 -s 33554432
+```
+
 ## Example Core Instance (with caches)
 
 The top (top_cache_axi/src_v/riscv_top.v) contains;
